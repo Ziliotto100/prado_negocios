@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../screens/banned_users_screen.dart';
 import '../screens/chat_list_screen.dart';
 import '../screens/favorites_screen.dart';
+import '../screens/featured_ads_screen.dart'; // <-- NOVO
 import '../screens/my_ads_screen.dart';
 import '../screens/profile_screen.dart';
 import '../services/auth_service.dart';
@@ -49,7 +50,7 @@ class AppDrawer extends StatelessWidget {
             text: 'Meu Perfil',
             onTap: () {
               if (currentUser != null) {
-                Navigator.of(context).pop(); // Fecha o drawer
+                Navigator.of(context).pop();
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (context) =>
@@ -95,16 +96,31 @@ class AppDrawer extends StatelessWidget {
             future: authService.isAdmin(),
             builder: (context, snapshot) {
               if (snapshot.data == true) {
-                return _buildDrawerItem(
-                  icon: Icons.security,
-                  text: 'Gerir Banidos',
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                          builder: (context) => const BannedUsersScreen()),
-                    );
-                  },
+                return Column(
+                  children: [
+                    _buildDrawerItem(
+                      icon: Icons.push_pin_outlined, // <-- NOVO
+                      text: 'Gerir Fixados',
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                              builder: (context) => const FeaturedAdsScreen()),
+                        );
+                      },
+                    ),
+                    _buildDrawerItem(
+                      icon: Icons.security,
+                      text: 'Gerir Banidos',
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                              builder: (context) => const BannedUsersScreen()),
+                        );
+                      },
+                    ),
+                  ],
                 );
               }
               return const SizedBox.shrink();

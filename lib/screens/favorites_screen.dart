@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/product_model.dart';
 import '../services/product_service.dart';
-import '../widgets/product_card.dart';
+import '../widgets/feed_product_card.dart'; // <-- CORRIGIDO
 
 class FavoritesScreen extends StatelessWidget {
   const FavoritesScreen({super.key});
@@ -31,11 +31,13 @@ class FavoritesScreen extends StatelessWidget {
 
           final favoriteDocs = snapshot.data!.docs;
           return ListView.builder(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(0),
             itemCount: favoriteDocs.length,
             itemBuilder: (context, index) {
               final product = ProductModel.fromFirestore(favoriteDocs[index]);
-              return ProductCard(product: product);
+              // CORRIGIDO: Usa o FeedProductCard para consistência visual
+              return FeedProductCard(
+                  key: ValueKey(product.id), product: product);
             },
           );
         },

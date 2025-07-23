@@ -7,24 +7,36 @@ import '../screens/product_detail_screen.dart';
 import '../services/auth_service.dart';
 import '../services/product_service.dart';
 
-// MUDANÇA: Convertido de volta para um StatelessWidget
-class FeedProductCard extends StatelessWidget {
+class FeedProductCard extends StatefulWidget {
   final ProductModel product;
   const FeedProductCard({super.key, required this.product});
+
+  @override
+  State<FeedProductCard> createState() => _FeedProductCardState();
+}
+
+class _FeedProductCardState extends State<FeedProductCard> {
+  final AuthService _authService = AuthService();
+  final ProductService _productService = ProductService();
+  late Future<UserModel?> _sellerFuture;
+  late Future<bool> _isAdminFuture;
+  late bool _isFavorited;
+
+  @override
+  void initState() {
+    super.initState();
+    timeago.setLocaleMessages('pt_BR', timeago.PtBrMessages());
+    _sellerFuture = _authService.getUser(widget.product.userId);
+    _isAdminFuture = _authService.isAdmin();
+    _isFavorited = _authService.currentUser != null &&
+        widget.product.favoritedBy.contains(_authService.currentUser!.uid);
+  }
 
   @override
   Widget build(BuildContext context) {
     final currencyFormatter =
         NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
-    final authService = AuthService();
-    final productService = ProductService();
-    final currentUserId = authService.currentUser?.uid;
-    // A verificação é feita diretamente aqui, sem estado local
-    final isFavorited =
-        currentUserId != null && product.favoritedBy.contains(currentUserId);
-
-    // Define a localização para o pacote timeago
-    timeago.setLocaleMessages('pt_BR', timeago.PtBrMessages());
+    final currentUserId = _authService.currentUser?.uid;
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 5),
@@ -35,20 +47,20 @@ class FeedProductCard extends StatelessWidget {
         onTap: () {
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (context) => ProductDetailScreen(product: product),
+              builder: (context) =>
+                  ProductDetailScreen(product: widget.product),
             ),
           );
         },
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // O cabeçalho agora obtém os dados diretamente
-            _buildSellerHeader(context, authService),
-            if (product.imageUrls.isNotEmpty)
+            _buildSellerHeader(),
+            if (widget.product.imageUrls.isNotEmpty)
               Stack(
                 children: [
                   Image.network(
-                    product.imageUrls.first,
+                    widget.product.imageUrls.first,
                     height: 250,
                     width: double.infinity,
                     fit: BoxFit.cover,
@@ -67,7 +79,8 @@ class FeedProductCard extends StatelessWidget {
                           color: Colors.grey, size: 50),
                     ),
                   ),
-                  if (currentUserId != null && product.userId != currentUserId)
+                  if (currentUserId != null &&
+                      widget.product.userId != currentUserId)
                     Positioned(
                       top: 8,
                       right: 8,
@@ -75,15 +88,17 @@ class FeedProductCard extends StatelessWidget {
                         backgroundColor: Colors.black.withOpacity(0.5),
                         child: IconButton(
                           icon: Icon(
-                            isFavorited
+                            _isFavorited
                                 ? Icons.favorite
                                 : Icons.favorite_border,
-                            color: isFavorited ? Colors.red : Colors.white,
+                            color: _isFavorited ? Colors.red : Colors.white,
                           ),
-                          // A ação agora é direta, sem setState
                           onPressed: () {
-                            productService.toggleFavoriteStatus(
-                                product.id!, isFavorited);
+                            setState(() {
+                              _isFavorited = !_isFavorited;
+                            });
+                            _productService.toggleFavoriteStatus(
+                                widget.product.id!, !_isFavorited);
                           },
                         ),
                       ),
@@ -96,13 +111,13 @@ class FeedProductCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    product.name,
+                    widget.product.name,
                     style: const TextStyle(
                         fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    currencyFormatter.format(product.price),
+                    currencyFormatter.format(widget.product.price),
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
@@ -118,18 +133,21 @@ class FeedProductCard extends StatelessWidget {
     );
   }
 
-  Widget _buildSellerHeader(BuildContext context, AuthService authService) {
-    return FutureBuilder<UserModel?>(
-      future: authService.getUser(product.userId),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
+  Widget _buildSellerHeader() {
+    return FutureBuilder(
+      future: Future.wait([_sellerFuture, _isAdminFuture]),
+      builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
           return const ListTile(
             contentPadding: EdgeInsets.symmetric(horizontal: 12.0),
             leading: CircleAvatar(radius: 20),
             title: Text('A carregar...'),
           );
         }
-        final seller = snapshot.data;
+
+        final UserModel? seller = snapshot.data?[0];
+        final bool isAdmin = snapshot.data?[1] ?? false;
+
         return ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 12.0),
           leading: CircleAvatar(
@@ -146,33 +164,44 @@ class FeedProductCard extends StatelessWidget {
               style:
                   const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
           subtitle: Text(
-            timeago.format(product.createdAt.toDate(), locale: 'pt_BR'),
+            timeago.format(widget.product.createdAt.toDate(), locale: 'pt_BR'),
             style: const TextStyle(fontSize: 12, color: Colors.grey),
           ),
-          trailing: FutureBuilder<bool>(
-            future: authService.isAdmin(),
-            builder: (context, snapshot) {
-              if (snapshot.data == true) {
-                return IconButton(
+          trailing: isAdmin
+              ? IconButton(
                   icon: const Icon(Icons.more_vert),
                   onPressed: () => _showAdminMenu(context),
-                );
-              }
-              return const SizedBox.shrink();
-            },
-          ),
+                )
+              : null,
         );
       },
     );
   }
 
   void _showAdminMenu(BuildContext context) {
-    final productService = ProductService();
     showModalBottomSheet(
       context: context,
       builder: (context) {
         return Wrap(
           children: <Widget>[
+            // Lógica para Fixar/Remover dos Fixados
+            ListTile(
+              leading: Icon(
+                widget.product.isFeatured
+                    ? Icons.push_pin
+                    : Icons.push_pin_outlined,
+                color: Colors.blue,
+              ),
+              title: Text(widget.product.isFeatured
+                  ? 'Remover dos Fixados'
+                  : 'Fixar Anúncio'),
+              onTap: () async {
+                Navigator.pop(context);
+                await _productService.toggleFeaturedStatus(
+                    widget.product.id!, widget.product.isFeatured);
+              },
+            ),
+            // Lógica para Apagar o Anúncio
             ListTile(
               leading: const Icon(Icons.delete_outline, color: Colors.red),
               title: const Text('Apagar Anúncio (Admin)'),
@@ -181,7 +210,8 @@ class FeedProductCard extends StatelessWidget {
                 final scaffoldMessenger = ScaffoldMessenger.of(context);
 
                 navigator.pop();
-                final success = await productService.deleteProduct(product);
+                final success =
+                    await _productService.deleteProduct(widget.product);
 
                 if (success) {
                   scaffoldMessenger.showSnackBar(

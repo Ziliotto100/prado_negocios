@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
 import '../services/product_service.dart';
-import '../widgets/product_card.dart';
+import '../widgets/feed_product_card.dart'; // <-- CORRIGIDO
 import '../models/product_model.dart';
 import 'edit_profile_screen.dart';
 
@@ -117,11 +117,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 }
                 final products = productSnapshot.data!.docs;
                 return ListView.builder(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.all(0),
                   itemCount: products.length,
                   itemBuilder: (context, index) {
                     final product = ProductModel.fromFirestore(products[index]);
-                    return ProductCard(product: product);
+                    // CORRIGIDO: Usa o FeedProductCard para consistência visual
+                    return FeedProductCard(
+                        key: ValueKey(product.id), product: product);
                   },
                 );
               },

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/product_model.dart';
 import '../services/product_service.dart';
-import '../widgets/product_card.dart';
+import '../widgets/feed_product_card.dart'; // <-- CORRIGIDO
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -38,7 +38,6 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        // Barra de Pesquisa
         title: TextField(
           controller: _searchController,
           autofocus: true,
@@ -85,10 +84,12 @@ class _SearchScreenState extends State<SearchScreen> {
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.all(0),
       itemCount: _results.length,
       itemBuilder: (context, index) {
-        return ProductCard(product: _results[index]);
+        // CORRIGIDO: Usa o FeedProductCard para consistência visual
+        return FeedProductCard(
+            key: ValueKey(_results[index].id), product: _results[index]);
       },
     );
   }

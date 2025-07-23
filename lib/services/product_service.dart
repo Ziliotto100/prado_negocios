@@ -14,13 +14,37 @@ class ProductService {
   final AuthService _authService = AuthService();
   final ImagePicker _picker = ImagePicker();
 
+  Future<List<ProductModel>> getFeaturedProductsOnce() async {
+    final snapshot = await _firestore
+        .collection('products')
+        .where('isFeatured', isEqualTo: true)
+        .orderBy('createdAt', descending: true)
+        .get();
+    return snapshot.docs.map((doc) => ProductModel.fromFirestore(doc)).toList();
+  }
+
+  Future<void> toggleFeaturedStatus(
+      String productId, bool isCurrentlyFeatured) async {
+    await _firestore.collection('products').doc(productId).update({
+      'isFeatured': !isCurrentlyFeatured,
+    });
+  }
+
+  Stream<QuerySnapshot> getFeaturedProducts() {
+    return _firestore
+        .collection('products')
+        .where('isFeatured', isEqualTo: true)
+        .orderBy('createdAt', descending: true)
+        .snapshots();
+  }
+
   Future<bool> addProduct({
     required List<File> imageFiles,
     required String name,
     required String description,
     required double price,
     required String category,
-    required String city, // <-- Adicionado
+    required String city,
   }) async {
     try {
       final user = _authService.currentUser;
@@ -43,9 +67,10 @@ class ProductService {
         imageUrls: imageUrls,
         userId: user.uid,
         category: category,
-        city: city, // <-- Adicionado
+        city: city,
         createdAt: Timestamp.now(),
         favoritedBy: [],
+        isFeatured: false,
       );
 
       final productData = newProduct.toMap();
@@ -65,7 +90,7 @@ class ProductService {
     required String newDescription,
     required double newPrice,
     required String newCategory,
-    required String newCity, // <-- Adicionado
+    required String newCity,
     File? newImageFile,
   }) async {
     try {
@@ -87,7 +112,7 @@ class ProductService {
         'price': newPrice,
         'imageUrls': imageUrls,
         'category': newCategory,
-        'city': newCity, // <-- Adicionado
+        'city': newCity,
         'name_lowercase': newName.toLowerCase(),
       };
 

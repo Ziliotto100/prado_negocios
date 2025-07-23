@@ -39,7 +39,6 @@ class AuthService {
     }
   }
 
-  // NOVO: Obtém todos os utilizadores banidos
   Stream<QuerySnapshot> getBannedUsers() {
     return _firestore
         .collection('users')
@@ -79,7 +78,7 @@ class AuthService {
         'name': name,
         'phone': phone,
         'address': address,
-        'name_lowercase': name.toLowerCase(), // Adiciona campo para pesquisa
+        'name_lowercase': name.toLowerCase(),
         if (photoUrl != null) 'photoUrl': photoUrl,
       };
 
@@ -123,7 +122,7 @@ class AuthService {
         'photoUrl': null,
         'role': 'user',
         'isBanned': false,
-        'name_lowercase': name.toLowerCase(), // Adiciona campo para pesquisa
+        'name_lowercase': name.toLowerCase(),
       });
 
       return userCredential;
@@ -133,23 +132,28 @@ class AuthService {
     }
   }
 
+  // LÓGICA CORRIGIDA
   Future<UserCredential?> signInWithEmailAndPassword(
       String email, String password) async {
     try {
-      final userQuery = await _firestore
-          .collection('users')
-          .where('email', isEqualTo: email)
-          .limit(1)
-          .get();
-      if (userQuery.docs.isNotEmpty) {
-        final userDoc = userQuery.docs.first;
-        if (userDoc.data()['isBanned'] == true) {
-          throw FirebaseAuthException(
-              code: 'user-disabled', message: 'Esta conta foi banida.');
-        }
-      }
-      return await _auth.signInWithEmailAndPassword(
+      // 1. Tenta autenticar o utilizador primeiro
+      final userCredential = await _auth.signInWithEmailAndPassword(
           email: email, password: password);
+
+      // 2. Se a autenticação for bem-sucedida, verifica se está banido
+      final userDoc = await _firestore
+          .collection('users')
+          .doc(userCredential.user!.uid)
+          .get();
+      if (userDoc.exists && userDoc.data()?['isBanned'] == true) {
+        // 3. Se estiver banido, desautentica-o imediatamente e lança um erro
+        await _auth.signOut();
+        throw FirebaseAuthException(
+            code: 'user-disabled', message: 'Esta conta foi banida.');
+      }
+
+      // 4. Se não estiver banido, retorna as credenciais
+      return userCredential;
     } on FirebaseAuthException catch (e) {
       print("Erro no login: ${e.message}");
       return null;

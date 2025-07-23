@@ -8,9 +8,10 @@ class ProductModel {
   final List<String> imageUrls;
   final String userId;
   final String category;
-  final String city; // <-- NOVO CAMPO
+  final String city;
   final Timestamp createdAt;
   final List<String> favoritedBy;
+  final bool isFeatured; // <-- NOVO CAMPO
 
   ProductModel({
     this.id,
@@ -20,9 +21,10 @@ class ProductModel {
     required this.imageUrls,
     required this.userId,
     required this.category,
-    required this.city, // <-- NOVO CAMPO
+    required this.city,
     required this.createdAt,
     required this.favoritedBy,
+    this.isFeatured = false, // <-- NOVO CAMPO
   });
 
   Map<String, dynamic> toMap() {
@@ -33,9 +35,10 @@ class ProductModel {
       'imageUrls': imageUrls,
       'userId': userId,
       'category': category,
-      'city': city, // <-- NOVO CAMPO
+      'city': city,
       'createdAt': createdAt,
       'favoritedBy': favoritedBy,
+      'isFeatured': isFeatured, // <-- NOVO CAMPO
     };
   }
 
@@ -49,9 +52,10 @@ class ProductModel {
       imageUrls: List<String>.from(data['imageUrls'] ?? []),
       userId: data['userId'] ?? '',
       category: data['category'] ?? 'Outros',
-      city: data['city'] ?? 'Antônio Prado', // <-- NOVO CAMPO
+      city: data['city'] ?? 'Antônio Prado',
       createdAt: data['createdAt'] ?? Timestamp.now(),
       favoritedBy: List<String>.from(data['favoritedBy'] ?? []),
+      isFeatured: data['isFeatured'] ?? false, // <-- NOVO CAMPO
     );
   }
 }
