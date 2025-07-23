@@ -18,7 +18,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
   late TextEditingController _descriptionController;
   late TextEditingController _priceController;
   String? _selectedCategory;
-  String? _selectedCity; // <-- Adicionado
+  String? _selectedCity;
   File? _newImageFile;
   bool _isLoading = false;
   final ProductService _productService = ProductService();
@@ -32,7 +32,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
     _priceController =
         TextEditingController(text: widget.product.price.toString());
     _selectedCategory = widget.product.category;
-    _selectedCity = widget.product.city; // <-- Adicionado
+    _selectedCity = widget.product.city;
   }
 
   Future<void> _pickImage() async {
@@ -55,7 +55,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
         newPrice:
             double.parse(_priceController.text.replaceAll(',', '.').trim()),
         newCategory: _selectedCategory!,
-        newCity: _selectedCity!, // <-- Adicionado
+        newCity: _selectedCity!,
         newImageFile: _newImageFile,
       );
 
@@ -146,7 +146,6 @@ class _EditProductScreenState extends State<EditProductScreen> {
                     value == null ? 'Campo obrigatório' : null,
               ),
               const SizedBox(height: 16),
-              // NOVO: Dropdown de Cidades
               DropdownButtonFormField<String>(
                 value: _selectedCity,
                 hint: const Text('Selecione a Cidade'),

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 import '../models/product_model.dart';
 import '../services/product_service.dart';
 import '../widgets/my_ad_card.dart';
-import 'edit_product_screen.dart';
 
 class MyAdsScreen extends StatefulWidget {
   const MyAdsScreen({super.key});
@@ -73,14 +73,13 @@ class _MyAdsScreenState extends State<MyAdsScreen> {
 
           final myAds = snapshot.data!.docs;
 
-          // MUDANÇA: Troca de ListView para GridView
           return GridView.builder(
             padding: const EdgeInsets.all(8.0),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2, // Duas colunas
+              crossAxisCount: 2,
               crossAxisSpacing: 8.0,
               mainAxisSpacing: 8.0,
-              childAspectRatio: 0.75, // Proporção do cartão
+              childAspectRatio: 0.75,
             ),
             itemCount: myAds.length,
             itemBuilder: (context, index) {

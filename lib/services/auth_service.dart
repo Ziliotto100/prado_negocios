@@ -10,10 +10,42 @@ class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
-  final ImagePicker _picker = ImagePicker();
+  UserModel? _currentUserModel;
 
   Stream<User?> get authStateChanges => _auth.authStateChanges();
   User? get currentUser => _auth.currentUser;
+
+  Future<bool> isAdmin() async {
+    if (currentUser == null) return false;
+    if (_currentUserModel != null &&
+        _currentUserModel!.id == currentUser!.uid) {
+      return _currentUserModel!.role == 'admin';
+    }
+
+    final user = await getUser(currentUser!.uid);
+    _currentUserModel = user;
+    return user?.role == 'admin';
+  }
+
+  Future<bool> toggleBanStatus(String userId, bool isCurrentlyBanned) async {
+    try {
+      await _firestore.collection('users').doc(userId).update({
+        'isBanned': !isCurrentlyBanned,
+      });
+      return true;
+    } catch (e) {
+      print("Erro ao alterar o estado de banimento: $e");
+      return false;
+    }
+  }
+
+  // NOVO: Obtém todos os utilizadores banidos
+  Stream<QuerySnapshot> getBannedUsers() {
+    return _firestore
+        .collection('users')
+        .where('isBanned', isEqualTo: true)
+        .snapshots();
+  }
 
   Future<UserModel?> getUser(String userId) async {
     try {
@@ -28,7 +60,6 @@ class AuthService {
     return null;
   }
 
-  // NOVO: Atualizar os dados do perfil do utilizador
   Future<bool> updateUserProfile({
     required String name,
     required String phone,
@@ -48,10 +79,12 @@ class AuthService {
         'name': name,
         'phone': phone,
         'address': address,
+        'name_lowercase': name.toLowerCase(), // Adiciona campo para pesquisa
         if (photoUrl != null) 'photoUrl': photoUrl,
       };
 
       await _firestore.collection('users').doc(user.uid).update(userData);
+      _currentUserModel = null;
       return true;
     } catch (e) {
       print("Erro ao atualizar perfil: $e");
@@ -59,7 +92,6 @@ class AuthService {
     }
   }
 
-  // NOVO: Função para fazer o upload da foto de perfil
   Future<String?> _uploadProfilePhoto(File photo, String userId) async {
     try {
       final storageRef = _storage
@@ -86,9 +118,12 @@ class AuthService {
         'name': name,
         'email': email,
         'createdAt': Timestamp.now(),
-        'phone': '', // Campos iniciais vazios
+        'phone': '',
         'address': '',
         'photoUrl': null,
+        'role': 'user',
+        'isBanned': false,
+        'name_lowercase': name.toLowerCase(), // Adiciona campo para pesquisa
       });
 
       return userCredential;
@@ -101,6 +136,18 @@ class AuthService {
   Future<UserCredential?> signInWithEmailAndPassword(
       String email, String password) async {
     try {
+      final userQuery = await _firestore
+          .collection('users')
+          .where('email', isEqualTo: email)
+          .limit(1)
+          .get();
+      if (userQuery.docs.isNotEmpty) {
+        final userDoc = userQuery.docs.first;
+        if (userDoc.data()['isBanned'] == true) {
+          throw FirebaseAuthException(
+              code: 'user-disabled', message: 'Esta conta foi banida.');
+        }
+      }
       return await _auth.signInWithEmailAndPassword(
           email: email, password: password);
     } on FirebaseAuthException catch (e) {
@@ -110,6 +157,7 @@ class AuthService {
   }
 
   Future<void> signOut() async {
+    _currentUserModel = null;
     await _auth.signOut();
   }
 }

@@ -30,11 +30,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     final isMyProfile = _authService.currentUser?.uid == widget.userId;
 
-    // A tela inteira agora é construída com base no FutureBuilder
     return FutureBuilder<UserModel?>(
       future: _userFuture,
       builder: (context, userSnapshot) {
-        // Estado de Carregamento
         if (userSnapshot.connectionState == ConnectionState.waiting) {
           return Scaffold(
             appBar: AppBar(title: const Text('A carregar...')),
@@ -42,7 +40,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           );
         }
 
-        // Estado de Erro ou Sem Dados
         if (!userSnapshot.hasData || userSnapshot.data == null) {
           return Scaffold(
             appBar: AppBar(title: const Text('Erro')),
@@ -50,19 +47,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
           );
         }
 
-        // Estado de Sucesso: Constrói a tela completa
         final user = userSnapshot.data!;
 
         return Scaffold(
           appBar: AppBar(
-            title: Text(user.name), // Usa o nome do utilizador já carregado
+            title: Text(user.name),
             actions: [
               if (isMyProfile)
                 IconButton(
                   icon: const Icon(Icons.edit),
                   onPressed: () {
-                    // A função já não precisa de ser 'async'
-                    // Navega diretamente com os dados do utilizador já carregados
                     Navigator.of(context)
                         .push(
                           MaterialPageRoute(
@@ -70,11 +64,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                         )
                         .then((_) => setState(() {
-                              // Recarrega os dados ao voltar da tela de edição
                               _userFuture = _authService.getUser(widget.userId);
                             }));
                   },
                 ),
+              FutureBuilder<bool>(
+                future: _authService.isAdmin(),
+                builder: (context, snapshot) {
+                  if (snapshot.data == true && !isMyProfile) {
+                    return IconButton(
+                      icon: Icon(
+                        user.isBanned ? Icons.lock_open : Icons.block,
+                        color: user.isBanned ? Colors.green : Colors.red,
+                      ),
+                      tooltip: user.isBanned
+                          ? 'Desbanir Utilizador'
+                          : 'Banir Utilizador',
+                      onPressed: () async {
+                        await _authService.toggleBanStatus(
+                            user.id, user.isBanned);
+                        setState(() {
+                          _userFuture = _authService.getUser(widget.userId);
+                        });
+                      },
+                    );
+                  }
+                  return const SizedBox.shrink();
+                },
+              ),
             ],
           ),
           body: NestedScrollView(
@@ -134,6 +151,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               style:
                   const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
+          if (user.isBanned)
+            const Text('UTILIZADOR BANIDO',
+                style:
+                    TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
           if (user.phone != null && user.phone!.isNotEmpty)
             _buildInfoRow(Icons.phone, user.phone!),
           if (user.address != null && user.address!.isNotEmpty)

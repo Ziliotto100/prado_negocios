@@ -4,9 +4,11 @@ class UserModel {
   final String id;
   final String name;
   final String email;
-  final String? phone; // Pode ser nulo
-  final String? address; // Pode ser nulo
-  final String? photoUrl; // Pode ser nulo
+  final String? phone;
+  final String? address;
+  final String? photoUrl;
+  final String role; // <-- NOVO
+  final bool isBanned; // <-- NOVO
 
   UserModel({
     required this.id,
@@ -15,6 +17,8 @@ class UserModel {
     this.phone,
     this.address,
     this.photoUrl,
+    this.role = 'user', // <-- NOVO
+    this.isBanned = false, // <-- NOVO
   });
 
   factory UserModel.fromFirestore(DocumentSnapshot doc) {
@@ -26,6 +30,8 @@ class UserModel {
       phone: data['phone'],
       address: data['address'],
       photoUrl: data['photoUrl'],
+      role: data['role'] ?? 'user', // <-- NOVO
+      isBanned: data['isBanned'] ?? false, // <-- NOVO
     );
   }
 }

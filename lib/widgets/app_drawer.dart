@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../screens/banned_users_screen.dart';
 import '../screens/chat_list_screen.dart';
 import '../screens/favorites_screen.dart';
 import '../screens/my_ads_screen.dart';
@@ -90,6 +91,25 @@ class AppDrawer extends StatelessWidget {
             },
           ),
           const Divider(),
+          FutureBuilder<bool>(
+            future: authService.isAdmin(),
+            builder: (context, snapshot) {
+              if (snapshot.data == true) {
+                return _buildDrawerItem(
+                  icon: Icons.security,
+                  text: 'Gerir Banidos',
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                          builder: (context) => const BannedUsersScreen()),
+                    );
+                  },
+                );
+              }
+              return const SizedBox.shrink();
+            },
+          ),
           _buildDrawerItem(
             icon: Icons.logout,
             text: 'Sair',
@@ -103,7 +123,6 @@ class AppDrawer extends StatelessWidget {
     );
   }
 
-  // Widget auxiliar para criar os itens do menu de forma consistente
   Widget _buildDrawerItem(
       {required IconData icon,
       required String text,

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart'; // <-- CORRIGIDO
+import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 
 class SignUpScreen extends StatefulWidget {
@@ -29,7 +29,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
       if (!mounted) return;
       setState(() => _isLoading = false);
 
-      if (user == null) {
+      if (user != null) {
+        // CORRIGIDO: Fecha a tela de registo ao ser bem-sucedido.
+        // O AuthWrapper tratará do resto.
+        Navigator.of(context).pop();
+      } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content:

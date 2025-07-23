@@ -119,7 +119,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     child: ElevatedButton.icon(
                       onPressed: () => _startChat(context),
                       icon: const Icon(Icons.chat_bubble_outline),
-                      label: const Text('Contactar Vendedor'),
+                      label: const Text(
+                          'Enviar mensagem'), // <-- TEXTO ALTERADO AQUI
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         textStyle: const TextStyle(fontSize: 18),

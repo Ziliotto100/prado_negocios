@@ -6,8 +6,16 @@ import 'feed_product_card.dart';
 class ProductsList extends StatefulWidget {
   final String? selectedCategory;
   final String? selectedCity;
+  final String sortBy;
+  final bool sortDescending;
 
-  const ProductsList({super.key, this.selectedCategory, this.selectedCity});
+  const ProductsList({
+    super.key,
+    this.selectedCategory,
+    this.selectedCity,
+    required this.sortBy,
+    required this.sortDescending,
+  });
 
   @override
   State<ProductsList> createState() => ProductsListState();
@@ -26,7 +34,9 @@ class ProductsListState extends State<ProductsList> {
   void didUpdateWidget(covariant ProductsList oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.selectedCategory != oldWidget.selectedCategory ||
-        widget.selectedCity != oldWidget.selectedCity) {
+        widget.selectedCity != oldWidget.selectedCity ||
+        widget.sortBy != oldWidget.sortBy ||
+        widget.sortDescending != oldWidget.sortDescending) {
       setState(() {
         _productsStream = _getProductsStream();
       });
@@ -46,7 +56,10 @@ class ProductsListState extends State<ProductsList> {
           productsQuery.where('city', isEqualTo: widget.selectedCity);
     }
 
-    return productsQuery.orderBy('createdAt', descending: true).snapshots();
+    productsQuery =
+        productsQuery.orderBy(widget.sortBy, descending: widget.sortDescending);
+
+    return productsQuery.snapshots();
   }
 
   void refresh() {
@@ -82,11 +95,16 @@ class ProductsListState extends State<ProductsList> {
         final products = snapshot.data!.docs;
 
         return ListView.builder(
+          // CORRIGIDO: Adiciona uma chave para guardar a posição do scroll
+          key: const PageStorageKey('products_list'),
           padding: const EdgeInsets.all(0),
           itemCount: products.length,
           itemBuilder: (context, index) {
             final product = ProductModel.fromFirestore(products[index]);
-            return FeedProductCard(product: product);
+            return FeedProductCard(
+              key: ValueKey(product.id),
+              product: product,
+            );
           },
         );
       },

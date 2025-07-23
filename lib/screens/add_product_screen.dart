@@ -16,7 +16,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
   final _descriptionController = TextEditingController();
   final _priceController = TextEditingController();
   String? _selectedCategory;
-  String? _selectedCity; // <-- Adicionado
+  String? _selectedCity;
   final List<File> _imageFiles = [];
   bool _isLoading = false;
   final ProductService _productService = ProductService();
@@ -63,7 +63,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
         description: _descriptionController.text.trim(),
         price: double.parse(_priceController.text.replaceAll(',', '.').trim()),
         category: _selectedCategory!,
-        city: _selectedCity!, // <-- Adicionado
+        city: _selectedCity!,
       );
 
       if (!mounted) return;
@@ -129,7 +129,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
                     value == null ? 'Campo obrigatório' : null,
               ),
               const SizedBox(height: 16),
-              // NOVO: Dropdown de Cidades
               DropdownButtonFormField<String>(
                 value: _selectedCity,
                 hint: const Text('Selecione a Cidade'),
