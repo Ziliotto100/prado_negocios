@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "4899689968",
+    "project_id": "pradonegocios1",
+    "storage_bucket": "pradonegocios1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:4899689968:android:4af7ec88d1b17ee424f935",
+        "android_client_info": {
+          "package_name": "com.example.prado_negocios"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA6g5_UerioEq6greyQOHLlA7wwyEdRGTg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
