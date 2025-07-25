@@ -1,21 +1,55 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
-    // START: FlutterFire Configuration
     id("com.google.gms.google-services")
-    // END: FlutterFire Configuration
     id("kotlin-android")
-    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+}
+
+// Função para ler as propriedades locais de forma segura
+fun localProperties(): Properties {
+    val properties = Properties()
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        localPropertiesFile.inputStream().use { stream ->
+            properties.load(stream)
+        }
+    }
+    return properties
+}
+
+val flutterVersionCode: Int by lazy {
+    localProperties().getProperty("flutter.versionCode")?.toInt() ?: 1
+}
+
+val flutterVersionName: String by lazy {
+    localProperties().getProperty("flutter.versionName") ?: "1.0"
 }
 
 android {
     namespace = "com.example.prado_negocios"
-    compileSdk = 35 // Usando uma versão comum do SDK
-    
-    // LINHA CORRIGIDA 👇
-    ndkVersion = "27.0.12077973"
+    // ✅ CORRIGIDO: Atualizado de 34 para 35, conforme o erro pedia
+    compileSdk = 35
+
+    defaultConfig {
+        applicationId = "com.example.prado_negocios"
+        minSdk = 23
+        // ✅ CORRIGIDO: É boa prática manter o targetSdk igual ao compileSdk
+        targetSdk = 35
+        versionCode = flutterVersionCode
+        versionName = flutterVersionName
+        multiDexEnabled = true
+    }
+
+    buildTypes {
+        release {
+            signingConfig = signingConfigs.getByName("debug")
+        }
+    }
 
     compileOptions {
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
@@ -23,26 +57,17 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
-
-    defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.prado_negocios"
-        // Esta linha já estava correta (23)
-        minSdk = 23
-        targetSdk = 35
-        versionCode = flutter.versionCode
-        versionName = flutter.versionName
-    }
-
-    buildTypes {
-        release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
-        }
-    }
 }
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-firestore")
+    implementation("com.google.firebase:firebase-storage")
+    implementation("com.google.firebase:firebase-messaging")
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 }

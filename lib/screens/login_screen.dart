@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import 'forgot_password_screen.dart'; // <-- NOVO
 import 'signup_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -31,7 +32,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (user == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('E-mail ou senha inválidos.'),
+            content: Text('E-mail ou senha inválidos, ou a conta foi banida.'),
             backgroundColor: Colors.red,
           ),
         );
@@ -58,8 +59,18 @@ class _LoginScreenState extends State<LoginScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Image.asset('assets/images/logo.png', height: 150),
-                const SizedBox(height: 24),
+                CircleAvatar(
+                  radius: 80,
+                  backgroundColor: Colors.white.withOpacity(0.9),
+                  child: Transform.translate(
+                    offset: const Offset(0, -5),
+                    child: Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: Image.asset('assets/images/logo.png'),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 32),
                 TextFormField(
                   controller: _emailController,
                   decoration: const InputDecoration(labelText: 'E-mail'),
@@ -77,7 +88,20 @@ class _LoginScreenState extends State<LoginScreen> {
                       ? 'A senha deve ter no mínimo 6 caracteres'
                       : null,
                 ),
-                const SizedBox(height: 24),
+                // NOVO: Botão "Esqueci a minha palavra-passe"
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                            builder: (context) => const ForgotPasswordScreen()),
+                      );
+                    },
+                    child: const Text('Esqueci a minha palavra-passe'),
+                  ),
+                ),
+                const SizedBox(height: 12),
                 _isLoading
                     ? const Center(child: CircularProgressIndicator())
                     : ElevatedButton(

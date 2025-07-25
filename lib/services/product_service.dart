@@ -14,30 +14,6 @@ class ProductService {
   final AuthService _authService = AuthService();
   final ImagePicker _picker = ImagePicker();
 
-  Future<List<ProductModel>> getFeaturedProductsOnce() async {
-    final snapshot = await _firestore
-        .collection('products')
-        .where('isFeatured', isEqualTo: true)
-        .orderBy('createdAt', descending: true)
-        .get();
-    return snapshot.docs.map((doc) => ProductModel.fromFirestore(doc)).toList();
-  }
-
-  Future<void> toggleFeaturedStatus(
-      String productId, bool isCurrentlyFeatured) async {
-    await _firestore.collection('products').doc(productId).update({
-      'isFeatured': !isCurrentlyFeatured,
-    });
-  }
-
-  Stream<QuerySnapshot> getFeaturedProducts() {
-    return _firestore
-        .collection('products')
-        .where('isFeatured', isEqualTo: true)
-        .orderBy('createdAt', descending: true)
-        .snapshots();
-  }
-
   Future<bool> addProduct({
     required List<File> imageFiles,
     required String name,
@@ -45,6 +21,7 @@ class ProductService {
     required double price,
     required String category,
     required String city,
+    required String condition,
   }) async {
     try {
       final user = _authService.currentUser;
@@ -68,9 +45,9 @@ class ProductService {
         userId: user.uid,
         category: category,
         city: city,
+        condition: condition,
         createdAt: Timestamp.now(),
         favoritedBy: [],
-        isFeatured: false,
       );
 
       final productData = newProduct.toMap();
@@ -91,6 +68,7 @@ class ProductService {
     required double newPrice,
     required String newCategory,
     required String newCity,
+    required String newCondition,
     File? newImageFile,
   }) async {
     try {
@@ -113,6 +91,7 @@ class ProductService {
         'imageUrls': imageUrls,
         'category': newCategory,
         'city': newCity,
+        'condition': newCondition,
         'name_lowercase': newName.toLowerCase(),
       };
 

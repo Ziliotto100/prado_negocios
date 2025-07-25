@@ -1,7 +1,7 @@
 // Lista de categorias de produtos
 const List<String> productCategories = [
   'Veículos',
-  'Eletrônicos',
+  'Eletrónicos',
   'Moda e Acessórios',
   'Casa e Móveis',
   'Desporto e Lazer',
@@ -10,7 +10,7 @@ const List<String> productCategories = [
   'Outros',
 ];
 
-// NOVO: Lista de cidades para o filtro
+// Lista de cidades para o filtro
 const List<String> cityOptions = [
   'Antônio Prado',
   'Ipê',
@@ -20,4 +20,10 @@ const List<String> cityOptions = [
   'São Marcos',
   'Caxias do Sul',
   'Vacaria',
+];
+
+// NOVO: Lista de condições do produto
+const List<String> productConditions = [
+  'Novo',
+  'Usado',
 ];

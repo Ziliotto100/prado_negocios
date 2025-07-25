@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import '../models/product_model.dart';
@@ -38,45 +39,43 @@ class _FeedProductCardState extends State<FeedProductCard> {
         NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
     final currentUserId = _authService.currentUser?.uid;
 
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 5),
-      elevation: 1,
-      clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
-      child: InkWell(
-        onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) =>
-                  ProductDetailScreen(product: widget.product),
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => ProductDetailScreen(product: widget.product),
+          ),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardTheme.color,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
             ),
-          );
-        },
+          ],
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildSellerHeader(),
+            const SizedBox(height: 12),
             if (widget.product.imageUrls.isNotEmpty)
               Stack(
                 children: [
-                  Image.network(
-                    widget.product.imageUrls.first,
-                    height: 250,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return Container(
-                        height: 250,
-                        color: Colors.grey[200],
-                        child: const Center(child: CircularProgressIndicator()),
-                      );
-                    },
-                    errorBuilder: (context, error, stackTrace) => Container(
-                      height: 250,
-                      color: Colors.grey[200],
-                      child: const Icon(Icons.broken_image,
-                          color: Colors.grey, size: 50),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: Image.network(
+                      widget.product.imageUrls.first,
+                      height: 200,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
                     ),
                   ),
                   if (currentUserId != null &&
@@ -85,13 +84,14 @@ class _FeedProductCardState extends State<FeedProductCard> {
                       top: 8,
                       right: 8,
                       child: CircleAvatar(
-                        backgroundColor: Colors.black.withOpacity(0.5),
+                        backgroundColor: Colors.black.withOpacity(0.6),
                         child: IconButton(
                           icon: Icon(
                             _isFavorited
                                 ? Icons.favorite
                                 : Icons.favorite_border,
                             color: _isFavorited ? Colors.red : Colors.white,
+                            size: 20,
                           ),
                           onPressed: () {
                             setState(() {
@@ -105,28 +105,23 @@ class _FeedProductCardState extends State<FeedProductCard> {
                     ),
                 ],
               ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.product.name,
-                    style: const TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    currencyFormatter.format(widget.product.price),
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ),
-                ],
+            const SizedBox(height: 12),
+            Text(
+              widget.product.name,
+              style: GoogleFonts.montserrat(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
               ),
             ),
+            const SizedBox(height: 4),
+            Text(
+              currencyFormatter.format(widget.product.price),
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF34A853),
+              ),
+            )
           ],
         ),
       ),
@@ -134,45 +129,59 @@ class _FeedProductCardState extends State<FeedProductCard> {
   }
 
   Widget _buildSellerHeader() {
-    return FutureBuilder(
-      future: Future.wait([_sellerFuture, _isAdminFuture]),
-      builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const ListTile(
-            contentPadding: EdgeInsets.symmetric(horizontal: 12.0),
-            leading: CircleAvatar(radius: 20),
-            title: Text('A carregar...'),
-          );
+    return FutureBuilder<UserModel?>(
+      future: _sellerFuture,
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const Row(children: [
+            CircleAvatar(radius: 20),
+            SizedBox(width: 8),
+            Text('A carregar...')
+          ]);
         }
-
-        final UserModel? seller = snapshot.data?[0];
-        final bool isAdmin = snapshot.data?[1] ?? false;
-
-        return ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 12.0),
-          leading: CircleAvatar(
-            radius: 20,
-            backgroundImage:
-                seller?.photoUrl != null && seller!.photoUrl!.isNotEmpty
-                    ? NetworkImage(seller.photoUrl!)
-                    : null,
-            child: seller?.photoUrl == null || seller!.photoUrl!.isEmpty
-                ? const Icon(Icons.person, size: 22)
-                : null,
-          ),
-          title: Text(seller?.name ?? 'Vendedor',
-              style:
-                  const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-          subtitle: Text(
-            timeago.format(widget.product.createdAt.toDate(), locale: 'pt_BR'),
-            style: const TextStyle(fontSize: 12, color: Colors.grey),
-          ),
-          trailing: isAdmin
-              ? IconButton(
-                  icon: const Icon(Icons.more_vert),
-                  onPressed: () => _showAdminMenu(context),
-                )
-              : null,
+        final seller = snapshot.data;
+        return Row(
+          children: [
+            CircleAvatar(
+              radius: 20,
+              backgroundImage:
+                  seller?.photoUrl != null && seller!.photoUrl!.isNotEmpty
+                      ? NetworkImage(seller.photoUrl!)
+                      : null,
+              child: seller?.photoUrl == null || seller!.photoUrl!.isEmpty
+                  ? const Icon(Icons.person, size: 22)
+                  : null,
+            ),
+            const SizedBox(width: 8),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  seller?.name ?? 'Vendedor',
+                  style: GoogleFonts.montserrat(fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  timeago.format(widget.product.createdAt.toDate(),
+                      locale: 'pt_BR'),
+                  style: GoogleFonts.poppins(
+                      fontSize: 12, color: Colors.grey[400]),
+                ),
+              ],
+            ),
+            const Spacer(),
+            FutureBuilder<bool>(
+              future: _isAdminFuture,
+              builder: (context, snapshot) {
+                if (snapshot.data == true) {
+                  return IconButton(
+                    icon: const Icon(Icons.more_vert),
+                    onPressed: () => _showAdminMenu(context),
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+            ),
+          ],
         );
       },
     );
@@ -184,45 +193,19 @@ class _FeedProductCardState extends State<FeedProductCard> {
       builder: (context) {
         return Wrap(
           children: <Widget>[
-            // Lógica para Fixar/Remover dos Fixados
-            ListTile(
-              leading: Icon(
-                widget.product.isFeatured
-                    ? Icons.push_pin
-                    : Icons.push_pin_outlined,
-                color: Colors.blue,
-              ),
-              title: Text(widget.product.isFeatured
-                  ? 'Remover dos Fixados'
-                  : 'Fixar Anúncio'),
-              onTap: () async {
-                Navigator.pop(context);
-                await _productService.toggleFeaturedStatus(
-                    widget.product.id!, widget.product.isFeatured);
-              },
-            ),
-            // Lógica para Apagar o Anúncio
             ListTile(
               leading: const Icon(Icons.delete_outline, color: Colors.red),
               title: const Text('Apagar Anúncio (Admin)'),
               onTap: () async {
                 final navigator = Navigator.of(context);
                 final scaffoldMessenger = ScaffoldMessenger.of(context);
-
                 navigator.pop();
                 final success =
                     await _productService.deleteProduct(widget.product);
-
                 if (success) {
                   scaffoldMessenger.showSnackBar(
                     const SnackBar(
                         content: Text('Anúncio apagado pelo administrador.')),
-                  );
-                } else {
-                  scaffoldMessenger.showSnackBar(
-                    const SnackBar(
-                        content: Text('Erro ao apagar o anúncio.'),
-                        backgroundColor: Colors.red),
                   );
                 }
               },

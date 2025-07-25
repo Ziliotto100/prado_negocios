@@ -9,9 +9,9 @@ class ProductModel {
   final String userId;
   final String category;
   final String city;
+  final String condition;
   final Timestamp createdAt;
   final List<String> favoritedBy;
-  final bool isFeatured; // <-- NOVO CAMPO
 
   ProductModel({
     this.id,
@@ -22,9 +22,9 @@ class ProductModel {
     required this.userId,
     required this.category,
     required this.city,
+    required this.condition,
     required this.createdAt,
     required this.favoritedBy,
-    this.isFeatured = false, // <-- NOVO CAMPO
   });
 
   Map<String, dynamic> toMap() {
@@ -36,9 +36,9 @@ class ProductModel {
       'userId': userId,
       'category': category,
       'city': city,
+      'condition': condition,
       'createdAt': createdAt,
       'favoritedBy': favoritedBy,
-      'isFeatured': isFeatured, // <-- NOVO CAMPO
     };
   }
 
@@ -53,9 +53,9 @@ class ProductModel {
       userId: data['userId'] ?? '',
       category: data['category'] ?? 'Outros',
       city: data['city'] ?? 'Antônio Prado',
+      condition: data['condition'] ?? 'Não especificado',
       createdAt: data['createdAt'] ?? Timestamp.now(),
       favoritedBy: List<String>.from(data['favoritedBy'] ?? []),
-      isFeatured: data['isFeatured'] ?? false, // <-- NOVO CAMPO
     );
   }
 }

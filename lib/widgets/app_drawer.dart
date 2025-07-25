@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import '../screens/banned_users_screen.dart';
 import '../screens/chat_list_screen.dart';
 import '../screens/favorites_screen.dart';
-import '../screens/featured_ads_screen.dart'; // <-- NOVO
+import '../screens/manage_ads_screen.dart';
 import '../screens/my_ads_screen.dart';
 import '../screens/profile_screen.dart';
+import '../screens/send_notification_screen.dart';
+import '../screens/settings_screen.dart';
 import '../services/auth_service.dart';
 
 class AppDrawer extends StatelessWidget {
@@ -19,27 +21,62 @@ class AppDrawer extends StatelessWidget {
       child: ListView(
         padding: EdgeInsets.zero,
         children: <Widget>[
-          DrawerHeader(
+          Container(
+            height: 150,
+            padding: const EdgeInsets.fromLTRB(16, 40, 16, 16),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary,
+              color: Theme.of(context).appBarTheme.backgroundColor,
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.end,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const Text(
-                  'Prado Negócios',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
+                CircleAvatar(
+                  radius: 40,
+                  backgroundColor: Colors.white.withOpacity(0.9),
+                  child: Transform.translate(
+                    offset: const Offset(0, -5),
+                    child: Padding(
+                      padding: const EdgeInsets.all(5.0),
+                      child: Image.asset(
+                        'assets/images/logo.png',
+                      ),
+                    ),
                   ),
                 ),
-                Text(
-                  currentUser?.email ?? '',
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 14,
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      if (currentUser != null)
+                        FutureBuilder(
+                          future: authService.getUser(currentUser.uid),
+                          builder: (context, snapshot) {
+                            if (snapshot.hasData) {
+                              return Text(
+                                snapshot.data!.name,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              );
+                            }
+                            return const SizedBox.shrink();
+                          },
+                        ),
+                      const SizedBox(height: 4),
+                      Text(
+                        currentUser?.email ?? 'Bem-vindo',
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -92,6 +129,16 @@ class AppDrawer extends StatelessWidget {
             },
           ),
           const Divider(),
+          _buildDrawerItem(
+            icon: Icons.settings_outlined,
+            text: 'Configurações',
+            onTap: () {
+              Navigator.of(context).pop();
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const SettingsScreen()),
+              );
+            },
+          ),
           FutureBuilder<bool>(
             future: authService.isAdmin(),
             builder: (context, snapshot) {
@@ -99,13 +146,13 @@ class AppDrawer extends StatelessWidget {
                 return Column(
                   children: [
                     _buildDrawerItem(
-                      icon: Icons.push_pin_outlined, // <-- NOVO
-                      text: 'Gerir Fixados',
+                      icon: Icons.image_outlined,
+                      text: 'Gerir Publicidade',
                       onTap: () {
                         Navigator.of(context).pop();
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                              builder: (context) => const FeaturedAdsScreen()),
+                              builder: (context) => const ManageAdsScreen()),
                         );
                       },
                     ),
@@ -120,12 +167,25 @@ class AppDrawer extends StatelessWidget {
                         );
                       },
                     ),
+                    _buildDrawerItem(
+                      icon: Icons.campaign_outlined,
+                      text: 'Enviar Notificação',
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  const SendNotificationScreen()),
+                        );
+                      },
+                    ),
                   ],
                 );
               }
               return const SizedBox.shrink();
             },
           ),
+          const Divider(),
           _buildDrawerItem(
             icon: Icons.logout,
             text: 'Sair',

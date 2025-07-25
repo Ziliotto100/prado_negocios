@@ -15,16 +15,72 @@ class AuthService {
   Stream<User?> get authStateChanges => _auth.authStateChanges();
   User? get currentUser => _auth.currentUser;
 
+  // CORRIGIDO: Torna a verificação de admin mais robusta
   Future<bool> isAdmin() async {
-    if (currentUser == null) return false;
-    if (_currentUserModel != null &&
-        _currentUserModel!.id == currentUser!.uid) {
+    final user = currentUser;
+    if (user == null) return false;
+
+    // Se já tivermos os dados do utilizador em cache, usa-os
+    if (_currentUserModel != null && _currentUserModel!.id == user.uid) {
       return _currentUserModel!.role == 'admin';
     }
 
-    final user = await getUser(currentUser!.uid);
-    _currentUserModel = user;
-    return user?.role == 'admin';
+    // Se não, vai buscar os dados à base de dados
+    final userModel = await getUser(user.uid);
+    _currentUserModel = userModel; // Guarda os dados em cache para uso futuro
+    return userModel?.role == 'admin';
+  }
+
+  Future<void> saveUserToken(String token) async {
+    final user = currentUser;
+    if (user == null) return;
+
+    await _firestore.collection('users').doc(user.uid).set({
+      'fcmToken': token,
+    }, SetOptions(merge: true));
+  }
+
+  Future<String?> updateUserEmail({
+    required String currentPassword,
+    required String newEmail,
+  }) async {
+    try {
+      final user = currentUser;
+      if (user == null) return "Utilizador não autenticado.";
+      if (user.email == null) return "Utilizador sem e-mail associado.";
+
+      AuthCredential credential = EmailAuthProvider.credential(
+        email: user.email!,
+        password: currentPassword,
+      );
+      await user.reauthenticateWithCredential(credential);
+
+      await user.verifyBeforeUpdateEmail(newEmail);
+
+      await _firestore.collection('users').doc(user.uid).update({
+        'email': newEmail,
+      });
+
+      return null;
+    } on FirebaseAuthException catch (e) {
+      print("Erro ao alterar e-mail: ${e.code}");
+      if (e.code == 'wrong-password') {
+        return 'A palavra-passe atual está incorreta.';
+      } else if (e.code == 'email-already-in-use') {
+        return 'Este e-mail já está a ser utilizado por outra conta.';
+      }
+      return 'Ocorreu um erro. Tente novamente.';
+    }
+  }
+
+  Future<bool> sendPasswordResetEmail(String email) async {
+    try {
+      await _auth.sendPasswordResetEmail(email: email);
+      return true;
+    } catch (e) {
+      print("Erro ao enviar e-mail de redefinição: $e");
+      return false;
+    }
   }
 
   Future<bool> toggleBanStatus(String userId, bool isCurrentlyBanned) async {
@@ -132,27 +188,22 @@ class AuthService {
     }
   }
 
-  // LÓGICA CORRIGIDA
   Future<UserCredential?> signInWithEmailAndPassword(
       String email, String password) async {
     try {
-      // 1. Tenta autenticar o utilizador primeiro
       final userCredential = await _auth.signInWithEmailAndPassword(
           email: email, password: password);
 
-      // 2. Se a autenticação for bem-sucedida, verifica se está banido
       final userDoc = await _firestore
           .collection('users')
           .doc(userCredential.user!.uid)
           .get();
       if (userDoc.exists && userDoc.data()?['isBanned'] == true) {
-        // 3. Se estiver banido, desautentica-o imediatamente e lança um erro
         await _auth.signOut();
         throw FirebaseAuthException(
             code: 'user-disabled', message: 'Esta conta foi banida.');
       }
 
-      // 4. Se não estiver banido, retorna as credenciais
       return userCredential;
     } on FirebaseAuthException catch (e) {
       print("Erro no login: ${e.message}");

@@ -19,6 +19,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
   late TextEditingController _priceController;
   String? _selectedCategory;
   String? _selectedCity;
+  String? _selectedCondition; // <-- Adicionado
   File? _newImageFile;
   bool _isLoading = false;
   final ProductService _productService = ProductService();
@@ -33,6 +34,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
         TextEditingController(text: widget.product.price.toString());
     _selectedCategory = widget.product.category;
     _selectedCity = widget.product.city;
+    _selectedCondition = widget.product.condition; // <-- Adicionado
   }
 
   Future<void> _pickImage() async {
@@ -56,6 +58,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
             double.parse(_priceController.text.replaceAll(',', '.').trim()),
         newCategory: _selectedCategory!,
         newCity: _selectedCity!,
+        newCondition: _selectedCondition!, // <-- Adicionado
         newImageFile: _newImageFile,
       );
 
@@ -156,6 +159,26 @@ class _EditProductScreenState extends State<EditProductScreen> {
                 },
                 items:
                     cityOptions.map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+                validator: (value) =>
+                    value == null ? 'Campo obrigatório' : null,
+              ),
+              const SizedBox(height: 16),
+              // NOVO: Dropdown de Condição
+              DropdownButtonFormField<String>(
+                value: _selectedCondition,
+                hint: const Text('Condição (Novo/Usado)'),
+                onChanged: (String? newValue) {
+                  setState(() {
+                    _selectedCondition = newValue;
+                  });
+                },
+                items: productConditions
+                    .map<DropdownMenuItem<String>>((String value) {
                   return DropdownMenuItem<String>(
                     value: value,
                     child: Text(value),

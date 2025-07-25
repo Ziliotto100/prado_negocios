@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:share_plus/share_plus.dart';
 import '../models/product_model.dart';
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
@@ -25,6 +26,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   void initState() {
     super.initState();
     _sellerFuture = _authService.getUser(widget.product.userId);
+  }
+
+  void _shareProduct() {
+    final textToShare = 'Veja este anúncio no Prado Negócios:\n'
+        '${widget.product.name}\n'
+        'Preço: R\$ ${widget.product.price.toStringAsFixed(2)}\n'
+        'Veja mais no app!';
+    Share.share(textToShare);
   }
 
   void _startChat(BuildContext context) async {
@@ -70,7 +79,16 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     final dateFormatter = DateFormat('dd/MM/yyyy \'às\' HH:mm', 'pt_BR');
 
     return Scaffold(
-      appBar: AppBar(title: Text(widget.product.name)),
+      appBar: AppBar(
+        title: Text(widget.product.name),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.share),
+            onPressed: _shareProduct,
+            tooltip: 'Partilhar Anúncio',
+          ),
+        ],
+      ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -82,6 +100,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Chip(
+                    label: Text(widget.product.condition),
+                    backgroundColor:
+                        Theme.of(context).colorScheme.secondaryContainer,
+                  ),
+                  const SizedBox(height: 8),
                   Text(
                     widget.product.name,
                     style: const TextStyle(
@@ -119,8 +143,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     child: ElevatedButton.icon(
                       onPressed: () => _startChat(context),
                       icon: const Icon(Icons.chat_bubble_outline),
-                      label: const Text(
-                          'Enviar mensagem'), // <-- TEXTO ALTERADO AQUI
+                      label: const Text('Enviar mensagem'),
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         textStyle: const TextStyle(fontSize: 18),

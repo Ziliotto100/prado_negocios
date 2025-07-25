@@ -17,6 +17,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
   final _priceController = TextEditingController();
   String? _selectedCategory;
   String? _selectedCity;
+  String? _selectedCondition; // <-- Adicionado
   final List<File> _imageFiles = [];
   bool _isLoading = false;
   final ProductService _productService = ProductService();
@@ -47,10 +48,11 @@ class _AddProductScreenState extends State<AddProductScreen> {
         );
         return;
       }
-      if (_selectedCategory == null || _selectedCity == null) {
+      if (_selectedCategory == null ||
+          _selectedCity == null ||
+          _selectedCondition == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Por favor, selecione a categoria e a cidade.')),
+          const SnackBar(content: Text('Por favor, preencha todos os campos.')),
         );
         return;
       }
@@ -64,6 +66,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
         price: double.parse(_priceController.text.replaceAll(',', '.').trim()),
         category: _selectedCategory!,
         city: _selectedCity!,
+        condition: _selectedCondition!, // <-- Adicionado
       );
 
       if (!mounted) return;
@@ -139,6 +142,26 @@ class _AddProductScreenState extends State<AddProductScreen> {
                 },
                 items:
                     cityOptions.map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+                validator: (value) =>
+                    value == null ? 'Campo obrigatório' : null,
+              ),
+              const SizedBox(height: 16),
+              // NOVO: Dropdown de Condição
+              DropdownButtonFormField<String>(
+                value: _selectedCondition,
+                hint: const Text('Condição (Novo/Usado)'),
+                onChanged: (String? newValue) {
+                  setState(() {
+                    _selectedCondition = newValue;
+                  });
+                },
+                items: productConditions
+                    .map<DropdownMenuItem<String>>((String value) {
                   return DropdownMenuItem<String>(
                     value: value,
                     child: Text(value),

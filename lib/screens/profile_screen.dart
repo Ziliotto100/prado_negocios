@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
 import '../services/product_service.dart';
-import '../widgets/feed_product_card.dart'; // <-- CORRIGIDO
+import '../widgets/feed_product_card.dart';
 import '../models/product_model.dart';
 import 'edit_profile_screen.dart';
 
@@ -121,7 +121,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   itemCount: products.length,
                   itemBuilder: (context, index) {
                     final product = ProductModel.fromFirestore(products[index]);
-                    // CORRIGIDO: Usa o FeedProductCard para consistência visual
                     return FeedProductCard(
                         key: ValueKey(product.id), product: product);
                   },

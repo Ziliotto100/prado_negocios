@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/product_model.dart';
 import '../services/product_service.dart';
-import '../widgets/feed_product_card.dart'; // <-- CORRIGIDO
+import '../widgets/feed_product_card.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -87,7 +87,6 @@ class _SearchScreenState extends State<SearchScreen> {
       padding: const EdgeInsets.all(0),
       itemCount: _results.length,
       itemBuilder: (context, index) {
-        // CORRIGIDO: Usa o FeedProductCard para consistência visual
         return FeedProductCard(
             key: ValueKey(_results[index].id), product: _results[index]);
       },
