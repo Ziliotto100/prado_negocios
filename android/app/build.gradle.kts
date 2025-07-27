@@ -19,6 +19,14 @@ fun localProperties(): Properties {
     return properties
 }
 
+// Adicionado para ler as propriedades do keystore
+val keystoreProperties = Properties()
+val keystorePropertiesFile = rootProject.file("key.properties")
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(keystorePropertiesFile.inputStream())
+}
+
+
 val flutterVersionCode: Int by lazy {
     localProperties().getProperty("flutter.versionCode")?.toInt() ?: 1
 }
@@ -28,14 +36,26 @@ val flutterVersionName: String by lazy {
 }
 
 android {
-    namespace = "com.example.prado_negocios"
-    // ✅ CORRIGIDO: Atualizado de 34 para 35, conforme o erro pedia
+    namespace = "com.ziliotto.pradonegocios"
+    // VOLTOU PARA 35, CONFORME EXIGIDO PELO ERRO
     compileSdk = 35
 
+    // Adicionado para configurar a assinatura
+    signingConfigs {
+        create("release") {
+            if (keystorePropertiesFile.exists()) {
+                storeFile = file(keystoreProperties.getProperty("storeFile"))
+                storePassword = keystoreProperties.getProperty("storePassword")
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+            }
+        }
+    }
+
     defaultConfig {
-        applicationId = "com.example.prado_negocios"
+        applicationId = "com.ziliotto.pradonegocios"
         minSdk = 23
-        // ✅ CORRIGIDO: É boa prática manter o targetSdk igual ao compileSdk
+        // VOLTOU PARA 35, CONFORME EXIGIDO PELO ERRO
         targetSdk = 35
         versionCode = flutterVersionCode
         versionName = flutterVersionName
@@ -43,8 +63,13 @@ android {
     }
 
     buildTypes {
-        release {
-            signingConfig = signingConfigs.getByName("debug")
+        getByName("release") {
+            signingConfig = signingConfigs.getByName("release")
+            isMinifyEnabled = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
 

@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:4899689968:android:4af7ec88d1b17ee424f935",
+        "mobilesdk_app_id": "1:4899689968:android:b2fc9901a1fbb26124f935",
         "android_client_info": {
-          "package_name": "com.example.prado_negocios"
+          "package_name": "com.ziliotto.pradonegocios"
         }
       },
       "oauth_client": [],
