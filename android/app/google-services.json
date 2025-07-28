@@ -7,6 +7,25 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:4899689968:android:995bbe08001835c424f935",
+        "android_client_info": {
+          "package_name": "br.com.pradonegocios.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA6g5_UerioEq6greyQOHLlA7wwyEdRGTg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:4899689968:android:b2fc9901a1fbb26124f935",
         "android_client_info": {
           "package_name": "com.ziliotto.pradonegocios"

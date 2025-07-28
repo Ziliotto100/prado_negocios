@@ -36,7 +36,7 @@ val flutterVersionName: String by lazy {
 }
 
 android {
-    namespace = "com.ziliotto.pradonegocios"
+    namespace = "br.com.pradonegocios.app"
     // VOLTOU PARA 35, CONFORME EXIGIDO PELO ERRO
     compileSdk = 35
 
@@ -53,7 +53,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.ziliotto.pradonegocios"
+        applicationId = "br.com.pradonegocios.app"
         minSdk = 23
         // VOLTOU PARA 35, CONFORME EXIGIDO PELO ERRO
         targetSdk = 35

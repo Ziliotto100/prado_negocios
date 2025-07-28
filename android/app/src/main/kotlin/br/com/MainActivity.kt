@@ -1,4 +1,4 @@
-package com.ziliotto.pradonegocios
+package br.com.pradonegocios.app // <-- ALTERE AQUI
 
 import io.flutter.embedding.android.FlutterActivity
 

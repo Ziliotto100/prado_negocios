@@ -57,8 +57,8 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyA6g5_UerioEq6greyQOHLlA7wwyEdRGTg',
-    // A LINHA ABAIXO FOI CORRIGIDA MANUALMENTE
-    appId: '1:4899689968:android:b2fc9901a1fbb26124f935',
+    // A LINHA ABAIXO FOI CORRIGIDA
+    appId: '1:4899689968:android:995bbe0801835c424f935',
     messagingSenderId: '4899689968',
     projectId: 'pradonegocios1',
     storageBucket: 'pradonegocios1.firebasestorage.app',
