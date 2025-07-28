@@ -6,7 +6,7 @@ import 'firebase_options.dart';
 import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
 import 'services/auth_service.dart';
-import 'services/notification_service.dart'; // <-- NOVO IMPORT
+// import 'services/notification_service.dart'; // <-- LINHA COMENTADA
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,7 +14,7 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   // Inicia o serviço de notificações
-  await NotificationService().init(); // <-- NOVA LINHA
+  // await NotificationService().init(); // <-- LINHA COMENTADA
   await initializeDateFormatting('pt_BR', null);
   runApp(const MyApp());
 }
